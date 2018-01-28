@@ -1,0 +1,279 @@
+@@ -0,0 +1,278 @@
+Program Snake;
+
+Uses CRT, DOS;
+
+Var
+  EXIT:Boolean;
+  C1, C2:Char;
+  RandCol : integer;
+  A : integer;
+  Q,W : integer;
+  DX,DY : integer;
+  X0,Y0 : integer;
+  EX,EY : integer;
+  HX,HY : integer;
+  SC : integer;
+  XBorder, YBorder : Integer;
+  X, Y:Array [1..400] of integer;
+  MoveDelay : integer;
+  Lifes : integer;
+  Len : Byte;
+  Name : String[10];
+
+Label
+  L2;
+
+Procedure VarSet;
+BEGIN
+  Len := 10;
+  X0 := 0;
+  Y0 := -1;
+  EX := 35;
+  EY := 21;
+  For A := 1 to Len do
+    BEGIN
+      X[A] := 35;
+      Y[A] := A+30;
+    END
+END;
+
+Procedure CursorOff;
+Var
+  Reg:Registers;
+Begin
+  With Reg do
+    Begin
+      AH := 1;
+      CH := $20
+    End;
+  Intr($10, Reg)
+End;
+
+procedure Border;
+begin
+ textcolor(Yellow);
+
+gotoxy(1,3);write('*********************************************************************************');
+gotoxy(1,4);write('*                                                                               *');
+gotoxy(1,5);write('*                                                                               *');
+gotoxy(1,6);write('*                                                                               *');
+gotoxy(1,7);write('*                                                                               *');
+gotoxy(1,8);write('*                                                                               *');
+gotoxy(1,9);write('*                                                                               *');
+gotoxy(1,10);write('*                                                                               *');
+gotoxy(1,11);write('*                                                                               *');
+gotoxy(1,12);write('*                                                                               *');
+gotoxy(1,12);write('*                                                                               *');
+gotoxy(1,13);write('*                                                                               *');
+gotoxy(1,14);write('*                                                                               *');
+gotoxy(1,15);write('*                                                                               *');
+gotoxy(1,16);write('*                                                                               *');
+gotoxy(1,17);write('*                                                                               *');
+gotoxy(1,18);write('*                                                                               *');
+gotoxy(1,19);write('*                                                                               *');
+gotoxy(1,20);write('*                                                                               *');
+gotoxy(1,21);write('*                                                                               *');
+gotoxy(1,22);write('*                                                                               *');
+gotoxy(1,23);write('*                                                                               *');
+gotoxy(1,24);write('*                                                                               *');
+gotoxy(1,25);write('*                                                                               *');
+gotoxy(1,26);write('*                                                                               *');
+gotoxy(1,27);write('*                                                                               *');
+gotoxy(1,28);write('*                                                                               *');
+gotoxy(1,29);write('*                                                                               *');
+gotoxy(1,30);write('*********************************************************************************');
+
+end;
+
+procedure WelcomeSnake;
+begin
+     
+end;
+
+Procedure Obj;
+Label
+  L;
+BEGIN
+L:Q := Random (40)+4;
+  W := Random (75)+3;
+  For A := 1 to Len do
+    If (X[A] = W) and (Y[A] = Q) then Goto L;
+  GotoXY (W, Q);
+  RandCol:= random(13);
+  RandCol:= RandCol+2;
+  textcolor(RandCol);
+  Write (char(01));
+END;
+
+Procedure PutSnakeVars;
+BEGIN
+ TextColor (red);
+  GotoXY (EX, EY);
+  Write (' ');
+For A := Len downto 1 do
+    BEGIN
+      GotoXY (X[A], Y[A]);
+      Write (char(219));
+    END;
+   GotoXY (8, 1);
+ GotoXY (60,1);
+  DX := X0;
+  DY := Y0;
+END;
+
+Procedure KeyScan;
+BEGIN
+If KeyPressed then
+    BEGIN
+      C1 := ReadKey;
+     If C1 = #0 then
+        BEGIN
+          C2 := ReadKey;
+          Case c2 of
+            #75: BEGIN; X0 := -1; Y0 := 0; gotoxy(35,1); write('Direction: ',char(27)); END;      {left}
+            #77: BEGIN; X0 := 1; Y0 := 0; gotoxy(35,1); write('Direction: ',char(26)) END;       {Right}
+            #80: BEGIN; X0 := 0; Y0 := 1; gotoxy(35,1); write('Direction: ',char(25)) END;       {DOWN}
+            #72: BEGIN; X0 := 0; Y0 := -1; gotoxy(35,1); write('Direction: ',char(24)) END       {UP}
+            END
+        END;
+      If C1 = #27 then EXIT := True                  {EXIT}
+      Else EXIT := false
+    END
+END;
+
+Function CheckRun:Boolean;
+Var
+  C:Boolean;
+BEGIN
+  CheckRun := false;
+END;
+Function CheckEat:Boolean;
+BEGIN
+ CheckEat := false;
+  For A := 2 to Len do If (X[1] = X[A]) and
+   (Y[1] = Y[A])
+     then begin
+     CheckEat := true;
+     if Lifes = 0 then begin
+     GotoXY(X[1],Y[1]);
+                    write('*');
+                    sound(1000);
+                    delay(1000);
+                    nosound;
+                  {  delay(2000);  }
+                    gotoxy(35,25);
+                    textcolor(lightred);
+                    write('G A M E O V E R');
+                    gotoxy(35,26);
+                    textcolor(lightblue);
+                    write('Score:',SC);
+                    delay(2000);
+                    halt;
+                    end;
+     textcolor(white);
+     Lifes:=Lifes-1;
+     GotoXY (60,1);
+     Write ('Remaining Lifes: ',Lifes);
+     GotoXY(X[1],Y[1]);
+                    write('*');
+                    sound(1000);
+                    delay(1000);
+                    nosound;
+                    delay(2000);
+     textcolor(green);
+     end;
+END;
+
+Function CheckObj:Boolean;
+BEGIN
+  If (W = HX) and (Q = HY) then CheckObj := true
+  Else CheckObj := false
+END;
+
+Procedure Move;
+BEGIN
+  EX := X[Len];
+  EY := Y[Len];
+  For A := Len downto 2 do
+    BEGIN
+      X[A] := X[A-1];
+      Y[A] := Y[A-1]
+    END;
+  X[1] := HX;
+  Y[1] := HY
+END;
+
+Procedure Fat;
+Begin
+  Inc (Len);
+  For A := Len downto 2 do
+    Begin
+      X[A] := X[A-1];
+      Y[A] := Y[A-1]
+    End
+End;
+
+BEGIN
+clrscr;
+Writeln('Hi This My Game For Za ki');
+Writeln('Palse Entre Your name For Start Game : ');
+Readln(Name);
+clrscr;
+cursoroff;
+welcomesnake;
+clrscr;
+textcolor(yellow);
+writeln('Instructions');
+textcolor(white);
+writeln('Up: ',char(24));
+writeln('Down: ',char(25));
+writeln('Right: ',char(26));
+writeln('Left: ',char(27));
+writeln('Escape: Esc');
+textcolor(red);
+writeln('Press Enter to Continue');
+readln;
+clrscr;
+Lifes:=3;
+MoveDelay:=125;
+PutSnakeVars;
+Randomize;
+      Repeat
+    KeyScan;
+
+      BEGIN
+        clrscr;
+        border;
+        VarSet;
+        textcolor(white);
+        gotoxy(35,1);
+        write('Direction: ',char(24));
+        Obj;
+        While true do
+          BEGIN
+            PutSnakeVars;
+            KeyScan;
+            If DX = -X0 then X0 := DX;
+            If DY = -Y0 then Y0 := DY;
+            HX := X[1] + X0;
+            HY := Y[1] + Y0;
+            If CheckObj then
+              BEGIN
+                Inc (SC);
+                if SC >= 5  then MoveDelay:=100;
+                if SC >= 10 then MoveDelay:=75;
+                if SC >= 15 then MoveDelay:=50;
+                if SC >= 20 then MoveDelay:=25;
+                Fat;
+                Obj;
+              END;
+            If CheckRun then Goto L2;
+            Move;
+            If CheckEat then Goto L2;
+            If EXIT then Goto L2;
+            Delay (MoveDelay);
+          END;
+L2:END
+  Until EXIT;
+END.
